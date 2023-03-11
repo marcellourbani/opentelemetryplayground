@@ -1,6 +1,9 @@
 import {
   BatchSpanProcessor,
-  ConsoleSpanExporter
+  ParentBasedSampler,
+  Sampler,
+  SamplingResult,
+  SamplingDecision
 } from "@opentelemetry/sdk-trace-base"
 import { Resource } from "@opentelemetry/resources"
 import { SemanticResourceAttributes } from "@opentelemetry/semantic-conventions"
@@ -19,8 +22,22 @@ const resource = Resource.default().merge(
   })
 )
 
+export class RandomSampler implements Sampler {
+  shouldSample(): SamplingResult {
+    const coinToss = Math.random() >= 0.5
+    const decision = coinToss
+      ? SamplingDecision.RECORD_AND_SAMPLED
+      : SamplingDecision.NOT_RECORD
+    return { decision }
+  }
+  toString(): string {
+    return "RandomSampler"
+  }
+}
+
 const provider = new NodeTracerProvider({
-  resource: resource
+  resource: resource,
+  sampler: new ParentBasedSampler({ root: new RandomSampler() })
 })
 // const exporter = new ConsoleSpanExporter()
 const exporter = new OTLPTraceExporter({
