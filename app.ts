@@ -31,8 +31,10 @@ app.get("/", async (req, res) => {
     parent.addEvent("Waiting...", { foo: 1, bar: "millis" })
     await delay(1)
     await spandelay("second", 2, parent)
-    if (Math.random() > 0.7)
-      parent.setStatus({ code: SpanStatusCode.ERROR, message: "random error" })
+    if (Math.random() > 0.7) throw new Error("random error")
+  } catch (ex) {
+    if (ex instanceof Error) parent.recordException(ex)
+    parent.setStatus({ code: SpanStatusCode.ERROR })
   } finally {
     parent.end()
   }
