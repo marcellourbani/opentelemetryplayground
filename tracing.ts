@@ -1,15 +1,12 @@
-import { NodeSDK } from "@opentelemetry/sdk-node"
-import { ConsoleSpanExporter } from "@opentelemetry/sdk-trace-node"
+import * as opentelemetry from "@opentelemetry/sdk-node"
 import { getNodeAutoInstrumentations } from "@opentelemetry/auto-instrumentations-node"
+import { OTLPTraceExporter } from "@opentelemetry/exporter-trace-otlp-http"
 
-const sdk = new NodeSDK({
-  traceExporter: new ConsoleSpanExporter(),
+const sdk = new opentelemetry.NodeSDK({
+  traceExporter: new OTLPTraceExporter({
+    url: "http://localhost:4318/v1/traces",
+    headers: {}
+  }),
   instrumentations: [getNodeAutoInstrumentations()]
 })
-
-sdk
-  .start()
-  .then(() => {
-    console.log("Tracing initialized")
-  })
-  .catch(error => console.log("Error initializing tracing", error))
+sdk.start()
